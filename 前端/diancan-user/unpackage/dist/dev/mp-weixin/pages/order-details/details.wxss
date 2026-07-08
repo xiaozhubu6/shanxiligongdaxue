@@ -1,0 +1,209 @@
+
+page{background-color: #f4f4f4;}
+.details-view{position: relative;}
+.order-top{
+	background:linear-gradient(to bottom, #f7d45f,#f7d562,#f8d561,#f9db76, #f9de80);
+	height: 300rpx;
+}
+.order-remind view:nth-child(1){
+	font-size: 35rpx;
+	font-weight: bold;
+	padding-bottom: 20rpx;
+}
+.order-remind{
+	height: 200rpx;
+	padding: 50rpx 0 0 50rpx;
+}
+.food-list{
+	/* position: absolute; */
+	/* top: 200rpx; */
+	left: 20rpx;
+	right: 20rpx;
+	margin-top: -100rpx; /* 调整top-view和food-list之间的间距 */
+}
+.foot-back{
+	background-color: #fefefe;
+	border-radius: 10rpx;
+	padding: 0 20rpx;
+	margin-bottom: 30rpx;
+}
+.foot-til{
+	height: 100rpx;
+	color: #999999;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+.foot-deta image{
+	display: block;
+	width: 130rpx;
+	height: 130rpx;
+	border-radius: 10rpx;
+}
+.foot-deta{
+	display: flex;
+	justify-content: space-between;
+	height: 130rpx;
+	margin: 40rpx 0;
+}
+.foot-name{
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	padding: 0 20rpx;
+	font-size: 30rpx;
+}
+.foot-name text:nth-child(1){font-size: 31rpx !important;font-weight: bold;}
+.foot-name text:nth-child(2){color: #666666;}
+.foot-total{font-weight: bold;}
+/* 展开更多 */
+.expand-more image{
+	width: 25rpx;
+	height: 25rpx;
+	display: block;
+	padding-left: 10rpx;
+}
+.expand-more{
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #999999;
+	font-size: 25rpx;
+	padding: 30rpx 0;
+	border-bottom: 1rpx solid #f1f1f2;
+}
+/* 总计 */
+.total-price{
+	display: flex;
+	align-items: center;
+	color: #333333;
+	padding-left: 40rpx;
+}
+.total-price text:nth-child(2){
+	font-size: 35rpx;
+	font-weight: bold;
+	padding-left: 30rpx;
+}
+.total-view{
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	padding: 30rpx 0;
+}
+.total-view view:nth-child(1){
+	color: #999999;
+}
+/* 订单号 */
+.order-number text{
+	display: block;
+	padding: 15rpx 0;
+	font-size: 28rpx;
+	color: #999999;
+}
+/* 加菜 */
+.add-a-dish{
+	background-color: #fefefe;
+	height: 120rpx;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	display: flex; /* 重新添加flex布局 */
+	align-items: center; /* 垂直居中 */
+	box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+	z-index: 99;
+}
+.add-a-dish view{
+	width: 100%; /* 修改为100%宽度 */
+	height: 70rpx;
+	background:linear-gradient(to right,#f8da81,#f8d771,#f7d362,#f6cb4a);
+	line-height: 70rpx; /* 统一高度和行高 */
+	text-align: center;
+	border-radius: 50rpx;
+	font-weight: bold;
+	padding: 0 20rpx; /* 将左右内边距移到内部view */
+}
+.payment-success-btn {
+  background: #cccccc; /* 灰色背景 */
+  color: #666666; /* 灰色文字 */
+  pointer-events: none; /* 禁用点击 */
+}
+/* 购物车页面按钮容器 */
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20rpx;
+  width: 100%;
+}
+.cart-button {
+  flex: 1;
+  height: 70rpx;
+  background: #f0f0f0;
+  line-height: 70rpx;
+  text-align: center;
+  border-radius: 50rpx;
+  font-weight: bold;
+  margin: 0 10rpx;
+  font-size: 28rpx;
+}
+.cart-button.primary {
+  background: linear-gradient(to right,#f8da81,#f8d771,#f7d362,#f6cb4a);
+  color: #333;
+}
+/* 评价区域样式 */
+.rating-area {
+  padding: 20rpx 0;
+}
+.rating-area text {
+  display: block;
+  margin-bottom: 20rpx;
+  font-size: 30rpx;
+}
+.rating-stars {
+  display: flex;
+  margin-bottom: 30rpx;
+}
+.star {
+  font-size: 40rpx;
+  color: #cccccc;
+  margin-right: 10rpx;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+.star.active {
+  color: #f7d45f;
+}
+.rating-btn {
+  display: flex;
+  justify-content: center;
+}
+.rating-btn view {
+				width: 200rpx;
+				height: 70rpx;
+				background:linear-gradient(to right,#f8da81,#f8d771,#f7d362,#f6cb4a);
+				line-height: 70rpx;
+				text-align: center;
+				border-radius: 50rpx;
+				font-weight: bold;
+}
+/* 评价内容区域样式 */
+.comment-area {
+				margin: 20rpx 0;
+}
+.comment-area text {
+				display: block;
+				margin-bottom: 10rpx;
+				font-size: 30rpx;
+}
+.comment-input {
+				width: 100%;
+				height: 150rpx;
+				border: 1rpx solid #e5e5e5;
+				border-radius: 10rpx;
+				padding: 15rpx;
+				font-size: 28rpx;
+				background-color: #f9f9f9;
+				resize: none;
+}
+

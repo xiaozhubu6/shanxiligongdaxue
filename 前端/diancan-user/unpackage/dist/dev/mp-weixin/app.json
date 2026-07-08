@@ -1,0 +1,23 @@
+{
+  "pages": [
+    "pages/saoma/saoma",
+    "pages/home-page/page",
+    "pages/index/index"
+  ],
+  "subPackages": [
+    {
+      "root": "pages/order-details",
+      "pages": [
+        "details"
+      ]
+    }
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "uni-app",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8"
+  },
+  "permission": {},
+  "usingComponents": {}
+}

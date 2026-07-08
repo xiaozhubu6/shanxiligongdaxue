@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.java1234.mapper.OrderMapper">
+
+    <resultMap type="com.java1234.entity.SalesVolume" id="SalesVolumeResult">
+
+    </resultMap>
+
+
+
+    <select id="list" parameterType="Map" resultType="com.java1234.entity.Order">
+        select * from t_order
+        <where>
+            <if test="order_no!=null and order_no!=''">
+                and order_no like concat('%', #{order_no}, '%')
+            </if>
+        </where>
+        order by order_time desc
+        <if test="start!=null and pageSize!=null">
+            limit #{start},#{pageSize}
+        </if>
+
+    </select>
+
+    <select id="getTotal" parameterType="Map" resultType="Long">
+        select count(*) from t_order
+        <where>
+            <if test="order_no!=null and order_no!=''">
+                and order_no like concat('%', #{order_no}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getSalesVolume" resultMap="SalesVolumeResult">
+        SELECT DATE_FORMAT(order_time, '%Y-%m-%d') AS TIME ,SUM(sett_amount) AS sales_volume 
+        FROM t_order  
+        WHERE transac_status='success' 
+        AND order_receiving='rec_order'
+        GROUP BY TIME  
+        ORDER BY TIME DESC 
+        LIMIT 0,7
+    </select>
+    <!-- 在 OrderMapper.xml 中添加以下查询语句 -->
+
+    <!-- 获取最近一周的销量统计 -->
+    <select id="getWeeklyStatistics" resultType="map">
+        SELECT
+            DAYOFWEEK(order_time) as day_of_week,
+            COUNT(*) as order_count
+        FROM t_order
+        WHERE order_time >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+          AND transac_status = 'success'
+          AND order_receiving = 'rec_order'
+        GROUP BY DAYOFWEEK(order_time)
+        ORDER BY day_of_week
+    </select>
+
+    <!-- 获取当年每月的销量统计 -->
+    <select id="getMonthlyStatistics" resultType="map">
+        SELECT
+            MONTH(order_time) as month,
+            COUNT(*) as order_count
+        FROM t_order
+        WHERE YEAR(order_time) = YEAR(CURDATE())
+          AND transac_status = 'success'
+          AND order_receiving = 'rec_order'
+        GROUP BY MONTH(order_time)
+        ORDER BY month
+    </select>
+
+    <!-- 获取历年销量统计 -->
+    <select id="getYearlyStatistics" resultType="map">
+        SELECT
+            YEAR(order_time) as year,
+            COUNT(*) as order_count
+        FROM t_order
+        WHERE transac_status = 'success'
+          AND order_receiving = 'rec_order'
+        GROUP BY YEAR(order_time)
+        ORDER BY year
+    </select>
+
+    <!-- 在 OrderMapper.xml 中添加以下销售额统计查询语句 -->
+
+    <!-- 获取最近一周的销售额统计 -->
+    <select id="getWeeklySalesStatistics" resultType="map">
+        SELECT
+            DATE_FORMAT(order_time, '%Y-%m-%d') as order_date,
+            IFNULL(SUM(sett_amount), 0) as total_sales
+        FROM t_order
+        WHERE order_time >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+          AND transac_status = 'success'
+          AND order_receiving = 'rec_order'
+        GROUP BY DATE_FORMAT(order_time, '%Y-%m-%d')
+        ORDER BY order_date ASC
+    </select>
+
+    <!-- 获取当年每月的销售额统计 -->
+    <select id="getMonthlySalesStatistics" resultType="map">
+        SELECT
+            MONTH(order_time) as month,
+            IFNULL(SUM(sett_amount), 0) as total_sales
+        FROM t_order
+        WHERE YEAR(order_time) = YEAR(CURDATE())
+          AND transac_status = 'success'
+          AND order_receiving = 'rec_order'
+        GROUP BY YEAR(order_time), MONTH(order_time)
+        ORDER BY YEAR(order_time), MONTH(order_time) ASC
+    </select>
+
+    <!-- 获取历年销售额统计 -->
+    <select id="getYearlySalesStatistics" resultType="map">
+        SELECT
+            YEAR(order_time) as year,
+            IFNULL(SUM(sett_amount), 0) as total_sales
+        FROM t_order
+        WHERE transac_status = 'success'
+          AND order_receiving = 'rec_order'
+        GROUP BY YEAR(order_time)
+        ORDER BY YEAR(order_time) ASC
+    </select>
+</mapper>

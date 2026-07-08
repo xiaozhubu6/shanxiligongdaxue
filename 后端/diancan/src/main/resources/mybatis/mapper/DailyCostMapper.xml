@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.java1234.mapper.DailyCostMapper">
+
+    <resultMap type="com.java1234.entity.DailyCost" id="DailyCostResult">
+        <id property="id" column="id"/>
+        <result property="costDate" column="cost_date"/>
+        <result property="totalCost" column="total_cost"/>
+        <result property="totalRevenue" column="total_revenue"/>
+        <result property="profit" column="profit"/>
+        <result property="costDetail" column="cost_detail"/>
+        <result property="createTime" column="create_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="list" parameterType="Map" resultMap="DailyCostResult">
+        select * from t_daily_cost
+        <where>
+            <if test="startDate!=null and startDate!=''">
+                and cost_date &gt;= #{startDate}
+            </if>
+            <if test="endDate!=null and endDate!=''">
+                and cost_date &lt;= #{endDate}
+            </if>
+        </where>
+        order by cost_date desc
+        <if test="start!=null and pageSize!=null">
+            limit #{start},#{pageSize}
+        </if>
+    </select>
+
+    <select id="getTotal" parameterType="Map" resultType="Long">
+        select count(*) from t_daily_cost
+        <where>
+            <if test="startDate!=null and startDate!=''">
+                and cost_date &gt;= #{startDate}
+            </if>
+            <if test="endDate!=null and endDate!=''">
+                and cost_date &lt;= #{endDate}
+            </if>
+        </where>
+    </select>
+
+    <select id="getWeeklyCostStatistics" resultType="map">
+        SELECT 
+            DATE_FORMAT(cost_date, '%Y-%m-%d') as date,
+            total_cost,
+            total_revenue,
+            profit
+        FROM t_daily_cost
+        WHERE cost_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+        ORDER BY cost_date ASC
+    </select>
+
+    <select id="getMonthlyCostStatistics" resultType="map">
+        SELECT 
+            DATE_FORMAT(cost_date, '%Y-%m-%d') as date,
+            total_cost,
+            total_revenue,
+            profit
+        FROM t_daily_cost
+        WHERE cost_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+        ORDER BY cost_date ASC
+    </select>
+
+</mapper> 
