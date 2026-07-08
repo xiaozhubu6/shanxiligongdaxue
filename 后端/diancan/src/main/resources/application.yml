@@ -8,8 +8,8 @@ spring:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/db_diancan?serverTimezone=Asia/Shanghai
-    username: root
-    password: zql123456
+    username: 
+    password:
 
 mybatis-plus:
   global-config:
@@ -23,8 +23,7 @@ mybatis-plus:
 
 weixin:
   accessTokenUrl: https://api.weixin.qq.com/cgi-bin/token
-  appid: wxd6aa2b8ebc8382ab
-  secret: fbebc76bb2d1009d0be5662e9d54fe89
-
+  appid:
+  secret: 
 qrcodeImgsFilePath: ./users/diancan/qrcodeImgs/
 dishImgsFilePath:  ./users/diancan/dishImgs/
