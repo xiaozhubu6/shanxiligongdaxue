@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhuqilong.back.mapper.ElderMapper">
+
+    <resultMap id="BaseResultMap" type="com.zhuqilong.back.entity.Elder">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="age" property="age" jdbcType="INTEGER"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="gender" property="gender" jdbcType="VARCHAR"/>
+        <result column="grid_group_id" property="gridGroupId" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="phone" property="phone" jdbcType="VARCHAR"/>
+        <result column="unit_number" property="unitNumber" jdbcType="VARCHAR"/>
+        <result column="room_number" property="roomNumber" jdbcType="VARCHAR"/>
+    </resultMap>
+    
+    <resultMap id="ElderWithCommunityMap" type="com.zhuqilong.back.entity.Elder" extends="BaseResultMap">
+        <result column="community_name" property="communityName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, age, created_at, gender, grid_group_id, name, status, phone, unit_number, room_number
+    </sql>
+
+    <insert id="insert" parameterType="com.zhuqilong.back.entity.Elder" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO elder (age, created_at, gender, grid_group_id, name, status, phone, unit_number, room_number)
+        VALUES (#{age}, #{createdAt}, #{gender}, #{gridGroupId}, #{name}, #{status}, #{phone}, #{unitNumber}, #{roomNumber})
+    </insert>
+
+    <update id="updateById" parameterType="com.zhuqilong.back.entity.Elder">
+        UPDATE elder
+        SET age = #{age},
+            created_at = #{createdAt},
+            gender = #{gender},
+            grid_group_id = #{gridGroupId},
+            name = #{name},
+            status = #{status},
+            phone = #{phone},
+            unit_number = #{unitNumber},
+            room_number = #{roomNumber}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM elder WHERE id = #{id}
+    </delete>
+
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT id, age, created_at, gender, grid_group_id, name, status, phone, unit_number, room_number
+        FROM elder
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM elder
+    </select>
+
+    <select id="selectByGridGroupId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM elder
+        WHERE grid_group_id = #{gridGroupId,jdbcType=BIGINT}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectByChildId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT 
+        e.id, e.age, e.created_at, e.gender, e.grid_group_id, e.name, e.status, e.phone, e.unit_number, e.room_number
+        FROM elder e
+        INNER JOIN elder_child ec ON e.id = ec.elder_id
+        WHERE ec.child_id = #{childId,jdbcType=BIGINT}
+        ORDER BY e.created_at DESC
+    </select>
+
+    <select id="selectAbnormalElders" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM elder
+        WHERE status != 'active'
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 删除老人相关的绑定关系 -->
+    <delete id="deleteElderChildByElderId" parameterType="java.lang.Long">
+        DELETE FROM elder_child WHERE elder_id = #{elderId}
+    </delete>
+
+    <!-- 获取老人及其子女信息的ResultMap -->
+    <resultMap id="ElderWithChildInfoMap" type="com.zhuqilong.back.dto.ElderWithChildInfo">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="age" property="age" jdbcType="INTEGER"/>
+        <result column="gender" property="gender" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="grid_group_id" property="gridGroupId" jdbcType="BIGINT"/>
+        <result column="community_name" property="communityName" jdbcType="VARCHAR"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="phone" property="phone" jdbcType="VARCHAR"/>
+        <result column="unit_number" property="unitNumber" jdbcType="VARCHAR"/>
+        <result column="room_number" property="roomNumber" jdbcType="VARCHAR"/>
+        <collection property="children" ofType="com.zhuqilong.back.dto.ElderWithChildInfo$ChildInfo">
+            <id column="child_id" property="id" jdbcType="BIGINT"/>
+            <result column="child_name" property="name" jdbcType="VARCHAR"/>
+            <result column="child_phone" property="phone" jdbcType="VARCHAR"/>
+            <result column="child_created_at" property="childCreatedAt" jdbcType="TIMESTAMP"/>
+        </collection>
+    </resultMap>
+
+    <!-- 获取单个老人及其子女信息 -->
+    <select id="selectElderWithChildInfo" parameterType="java.lang.Long" resultMap="ElderWithChildInfoMap">
+        SELECT 
+            e.id,
+            e.name,
+            e.age,
+            e.gender,
+            e.status,
+            e.grid_group_id,
+            c.name as community_name,
+            e.created_at,
+            e.phone,
+            e.unit_number,
+            e.room_number,
+            child_tbl.id as child_id,
+            child_tbl.name as child_name,
+            child_tbl.phone as child_phone,
+            child_tbl.created_at as child_created_at
+        FROM elder e
+        LEFT JOIN grid_group gg ON e.grid_group_id = gg.id
+        LEFT JOIN community c ON gg.community_id = c.id
+        LEFT JOIN elder_child ec ON e.id = ec.elder_id
+        LEFT JOIN child child_tbl ON ec.child_id = child_tbl.id
+        WHERE e.id = #{elderId}
+        ORDER BY child_tbl.created_at DESC
+    </select>
+
+    <!-- 获取所有老人及其子女信息 -->
+    <select id="selectAllEldersWithChildInfo" resultMap="ElderWithChildInfoMap">
+        SELECT 
+            e.id,
+            e.name,
+            e.age,
+            e.gender,
+            e.status,
+            e.grid_group_id,
+            c.name as community_name,
+            e.created_at,
+            e.phone,
+            e.unit_number,
+            e.room_number,
+            ec.child_id,
+            child_tbl.name as child_name,
+            child_tbl.phone as child_phone,
+            child_tbl.created_at as child_created_at
+        FROM elder e
+        LEFT JOIN grid_group gg ON e.grid_group_id = gg.id
+        LEFT JOIN community c ON gg.community_id = c.id
+        LEFT JOIN elder_child ec ON e.id = ec.elder_id
+        LEFT JOIN child child_tbl ON ec.child_id = child_tbl.id
+        ORDER BY e.created_at DESC
+    </select>
+    
+    <!-- 获取包含社区名的单个老人 -->
+    <select id="selectElderWithCommunity" parameterType="java.lang.Long" resultMap="ElderWithCommunityMap">
+        SELECT 
+            e.id, e.age, e.created_at, e.gender, e.grid_group_id, e.name, e.status, e.phone, e.unit_number, e.room_number,
+            c.name as community_name
+        FROM elder e
+        LEFT JOIN grid_group gg ON e.grid_group_id = gg.id
+        LEFT JOIN community c ON gg.community_id = c.id
+        WHERE e.id = #{id}
+    </select>
+    
+    <!-- 获取包含社区名的所有老人 -->
+    <select id="selectAllEldersWithCommunity" resultMap="ElderWithCommunityMap">
+        SELECT 
+            e.id, e.age, e.created_at, e.gender, e.grid_group_id, e.name, e.status, e.phone, e.unit_number, e.room_number,
+            c.name as community_name
+        FROM elder e
+        LEFT JOIN grid_group gg ON e.grid_group_id = gg.id
+        LEFT JOIN community c ON gg.community_id = c.id
+        ORDER BY e.created_at DESC
+    </select>
+
+</mapper>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhuqilong.back.mapper.AccountMapper">
+
+    <resultMap id="BaseResultMap" type="com.zhuqilong.back.entity.Account">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="balance" property="balance" jdbcType="DECIMAL"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="elder_id" property="elderId" jdbcType="BIGINT"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.zhuqilong.back.entity.Account" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO account (balance, created_at, elder_id, updated_at)
+        VALUES (#{balance}, #{createdAt}, #{elderId}, #{updatedAt})
+    </insert>
+
+    <update id="updateById" parameterType="com.zhuqilong.back.entity.Account">
+        UPDATE account
+        SET balance = #{balance},
+            created_at = #{createdAt},
+            elder_id = #{elderId},
+            updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM account WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByElderId" parameterType="java.lang.Long">
+        DELETE FROM account WHERE elder_id = #{elderId}
+    </delete>
+
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT id, balance, created_at, elder_id, updated_at
+        FROM account
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByElderId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT id, balance, created_at, elder_id, updated_at
+        FROM account
+        WHERE elder_id = #{elderId}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT id, balance, created_at, elder_id, updated_at
+        FROM account
+    </select>
+
+</mapper>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhuqilong.back.mapper.EmergencyEventMapper">
+    
+    <resultMap id="BaseResultMap" type="com.zhuqilong.back.entity.EmergencyEvent">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="elder_id" property="elderId" jdbcType="BIGINT"/>
+        <result column="event_type" property="eventType" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="handled_at" property="handledAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, elder_id, event_type, status, created_at, handled_at
+    </sql>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        select 
+        <include refid="Base_Column_List" />
+        from emergency_event
+        order by created_at desc
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select 
+        <include refid="Base_Column_List" />
+        from emergency_event
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        delete from emergency_event
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="insert" parameterType="com.zhuqilong.back.entity.EmergencyEvent" useGeneratedKeys="true" keyProperty="id">
+        insert into emergency_event (elder_id, event_type, status, created_at, handled_at)
+        values (#{elderId,jdbcType=BIGINT}, #{eventType,jdbcType=VARCHAR}, #{status,jdbcType=VARCHAR}, #{createdAt,jdbcType=TIMESTAMP}, #{handledAt,jdbcType=TIMESTAMP})
+    </insert>
+
+    <select id="selectByElderId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select 
+        <include refid="Base_Column_List" />
+        from emergency_event
+        where elder_id = #{elderId,jdbcType=BIGINT}
+        order by created_at desc
+    </select>
+
+    <select id="selectByStatus" resultMap="BaseResultMap" parameterType="java.lang.String">
+        select 
+        <include refid="Base_Column_List" />
+        from emergency_event
+        where status = #{status,jdbcType=VARCHAR}
+        order by created_at desc
+    </select>
+
+    <update id="updateById" parameterType="com.zhuqilong.back.entity.EmergencyEvent">
+        update emergency_event
+        <set>
+            <if test="elderId != null">elder_id = #{elderId,jdbcType=BIGINT},</if>
+            <if test="eventType != null">event_type = #{eventType,jdbcType=VARCHAR},</if>
+            <if test="status != null">status = #{status,jdbcType=VARCHAR},</if>
+            <if test="handledAt != null">handled_at = #{handledAt,jdbcType=TIMESTAMP},</if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+</mapper>

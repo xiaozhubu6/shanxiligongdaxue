@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhuqilong.back.mapper.CommunityMapper">
+    
+    <resultMap id="BaseResultMap" type="com.zhuqilong.back.entity.Community">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="address" property="address" jdbcType="VARCHAR"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, name, address, created_at
+    </sql>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        select 
+        <include refid="Base_Column_List" />
+        from community
+        order by created_at desc
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select 
+        <include refid="Base_Column_List" />
+        from community
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        delete from community
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <delete id="delete" parameterType="com.zhuqilong.back.entity.Community">
+        delete from community
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="insert" parameterType="com.zhuqilong.back.entity.Community" useGeneratedKeys="true" keyProperty="id">
+        insert into community (name, address, created_at)
+        values (#{name,jdbcType=VARCHAR}, #{address,jdbcType=VARCHAR}, #{createdAt,jdbcType=TIMESTAMP})
+    </insert>
+
+    <update id="updateById" parameterType="com.zhuqilong.back.entity.Community">
+        update community
+        <set>
+            <if test="name != null">name = #{name,jdbcType=VARCHAR},</if>
+            <if test="address != null">address = #{address,jdbcType=VARCHAR},</if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+</mapper>

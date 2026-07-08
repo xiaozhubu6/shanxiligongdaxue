@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhuqilong.back.mapper.PurchaseRequestMapper">
+    
+    <resultMap id="BaseResultMap" type="com.zhuqilong.back.entity.PurchaseRequest">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="elder_id" property="elderId" jdbcType="BIGINT"/>
+        <result column="content" property="content" jdbcType="VARCHAR"/>
+        <result column="estimated_amount" property="estimatedAmount" jdbcType="DECIMAL"/>
+        <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, elder_id, content, estimated_amount, actual_amount, remark, status, created_at, updated_at
+    </sql>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        select 
+        <include refid="Base_Column_List" />
+        from purchase_request
+        order by created_at desc
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select 
+        <include refid="Base_Column_List" />
+        from purchase_request
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <select id="selectByElderId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select 
+        <include refid="Base_Column_List" />
+        from purchase_request
+        where elder_id = #{elderId,jdbcType=BIGINT}
+        order by created_at desc
+    </select>
+
+    <select id="selectByStatus" resultMap="BaseResultMap" parameterType="java.lang.String">
+        select 
+        <include refid="Base_Column_List" />
+        from purchase_request
+        where status = #{status,jdbcType=VARCHAR}
+        order by created_at desc
+    </select>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        delete from purchase_request
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="insert" parameterType="com.zhuqilong.back.entity.PurchaseRequest" useGeneratedKeys="true" keyProperty="id">
+        insert into purchase_request (elder_id, content, estimated_amount, actual_amount, remark, status, created_at, updated_at)
+        values (#{elderId,jdbcType=BIGINT}, #{content,jdbcType=VARCHAR}, #{estimatedAmount,jdbcType=DECIMAL}, #{actualAmount,jdbcType=DECIMAL}, #{remark,jdbcType=VARCHAR}, #{status,jdbcType=VARCHAR}, #{createdAt,jdbcType=TIMESTAMP}, #{updatedAt,jdbcType=TIMESTAMP})
+    </insert>
+
+    <update id="updateById" parameterType="com.zhuqilong.back.entity.PurchaseRequest">
+        update purchase_request
+        <set>
+            <if test="elderId != null">elder_id = #{elderId,jdbcType=BIGINT},</if>
+            <if test="content != null">content = #{content,jdbcType=VARCHAR},</if>
+            <if test="estimatedAmount != null">estimated_amount = #{estimatedAmount,jdbcType=DECIMAL},</if>
+            <if test="actualAmount != null">actual_amount = #{actualAmount,jdbcType=DECIMAL},</if>
+            <if test="remark != null">remark = #{remark,jdbcType=VARCHAR},</if>
+            <if test="status != null">status = #{status,jdbcType=VARCHAR},</if>
+            <if test="createdAt != null">created_at = #{createdAt,jdbcType=TIMESTAMP},</if>
+            <if test="updatedAt != null">updated_at = #{updatedAt,jdbcType=TIMESTAMP},</if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+</mapper>

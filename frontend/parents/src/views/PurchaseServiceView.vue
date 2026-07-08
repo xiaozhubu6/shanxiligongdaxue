@@ -1,0 +1,409 @@
+<template>
+  <div class="purchase-container">
+    <div class="header">
+      <h2>代购服务</h2>
+      <p>需要购买生活用品？我们来帮您</p>
+    </div>
+    
+    <div class="content">
+      <!-- 快捷选择 -->
+      <div class="quick-select">
+        <h3>常用物品</h3>
+        <el-row :gutter="15">
+          <el-col :span="6" v-for="item in commonItems" :key="item.id">
+            <el-card class="item-card" @click="selectItem(item)">
+              <div class="item-icon">
+                <el-icon size="32"><component :is="item.icon" /></el-icon>
+              </div>
+              <div class="item-info">
+                <h4>{{ item.name }}</h4>
+                <p class="price">约¥{{ item.price }}</p>
+              </div>
+            </el-card>
+          </el-col>
+        </el-row>
+      </div>
+      
+      <!-- 自定义输入 -->
+      <div class="custom-input">
+        <h3>自定义需求</h3>
+        <div class="input-with-voice">
+          <el-input
+            v-model="customItem"
+            type="textarea"
+            :rows="3"
+            placeholder="请描述您需要的物品...或点击麦克风语音输入"
+            style="font-size: 18px; margin-bottom: 20px;"
+          />
+          <div class="voice-controls">
+            <el-button 
+              @click="toggleVoiceInput"
+              :type="isListening ? 'danger' : 'primary'"
+              :loading="isListening"
+              size="large"
+              circle
+            >
+              <el-icon><Microphone v-if="!isListening" /><VideoPause v-else /></el-icon>
+            </el-button>
+            <span class="voice-status">
+              {{ isListening ? '正在录音...' : '点击语音输入' }}
+            </span>
+          </div>
+        </div>
+        <div class="input-actions">
+          <el-button 
+            type="primary" 
+            size="large"
+            @click="submitRequest"
+            :loading="submitting"
+            style="font-size: 18px; padding: 12px 30px;"
+          >
+            提交需求
+          </el-button>
+        </div>
+      </div>
+      
+      <!-- 历史记录 -->
+      <div class="history">
+        <h3>代购记录</h3>
+        <el-table :data="purchaseHistory" style="width: 100%">
+          <el-table-column prop="content" label="代购内容" />
+          <el-table-column prop="status" label="状态" width="100">
+            <template #default="{ row }">
+              <el-tag :type="getStatusType(row.status)">
+                {{ getStatusText(row.status) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createdAt" label="申请时间" width="180" />
+        </el-table>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { ShoppingCart, Plus, Coffee, ShoppingBag, Microphone, VideoPause } from '@element-plus/icons-vue'
+import { useUserStore } from '@/stores/user'
+import { purchaseApi } from '@/api'
+
+const userStore = useUserStore()
+
+const submitting = ref(false)
+const customItem = ref('')
+const isListening = ref(false)
+const recognition = ref(null)
+
+const commonItems = ref([
+  { id: 1, name: '大米', price: '30', icon: 'Coffee' },
+  { id: 2, name: '食用油', price: '50', icon: 'ShoppingBag' },
+  { id: 3, name: '蔬菜', price: '20', icon: 'ShoppingCart' },
+  { id: 4, name: '水果', price: '25', icon: 'ShoppingCart' },
+  { id: 5, name: '日用品', price: '40', icon: 'Plus' }
+])
+
+const purchaseHistory = ref([])
+
+const selectItem = (item) => {
+  customItem.value = item.name
+}
+
+const submitRequest = async () => {
+  if (!customItem.value.trim()) {
+    ElMessage.warning('请输入代购内容')
+    return
+  }
+  
+  submitting.value = true
+  
+  try {
+    const requestData = {
+      elderId: userStore.elderInfo?.id || 1,
+      content: customItem.value
+      // 不需要预估金额，由管理员确认时填写
+    }
+    
+    console.log('提交代购请求:', requestData)
+    await purchaseApi.createRequest(requestData)
+    ElMessage.success('代购需求已提交，请等待管理员处理')
+    
+    // 清空表单
+    customItem.value = ''
+    
+    // 重新加载历史记录
+    loadPurchaseHistory()
+    
+  } catch (error) {
+    console.error('代购请求错误:', error)
+    ElMessage.error('提交失败，请重试')
+  } finally {
+    submitting.value = false
+  }
+}
+
+const loadPurchaseHistory = async () => {
+  try {
+    const history = await purchaseApi.getRequestsByElder(userStore.elderInfo?.id || 1)
+    purchaseHistory.value = history || []
+  } catch (error) {
+    console.error('加载代购记录失败:', error)
+  }
+}
+
+// 语音识别功能
+const initSpeechRecognition = () => {
+  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    recognition.value = new SpeechRecognition()
+    recognition.value.lang = 'zh-CN'
+    recognition.value.continuous = false
+    recognition.value.interimResults = false
+
+    recognition.value.onresult = (event) => {
+      const transcript = event.results[0][0].transcript
+      customItem.value = transcript
+      ElMessage.success('语音识别完成')
+      console.log('语音识别结果:', transcript)
+    }
+
+    recognition.value.onerror = (event) => {
+      console.error('语音识别错误:', event.error)
+      isListening.value = false
+      
+      if (event.error === 'not-allowed') {
+        ElMessage.error('麦克风权限被拒绝，请在浏览器设置中允许麦克风权限')
+      } else if (event.error === 'no-speech') {
+        ElMessage.warning('未检测到语音，请重试')
+      } else {
+        ElMessage.error('语音识别失败: ' + event.error)
+      }
+    }
+
+    recognition.value.onend = () => {
+      isListening.value = false
+      console.log('语音识别结束')
+    }
+  } else {
+    ElMessage.warning('浏览器不支持语音识别功能')
+  }
+}
+
+const requestMicrophonePermission = async () => {
+  try {
+    // 请求麦克风权限
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    console.log('麦克风权限获取成功')
+    stream.getTracks().forEach(track => track.stop()) // 立即停止，只是为了获取权限
+    return true
+  } catch (error) {
+    console.error('麦克风权限获取失败:', error)
+    ElMessage.error('无法获取麦克风权限，请检查浏览器设置')
+    return false
+  }
+}
+
+const toggleVoiceInput = async () => {
+  console.log('点击语音输入按钮')
+  
+  // 首先检查麦克风权限
+  const hasPermission = await requestMicrophonePermission()
+  if (!hasPermission) {
+    return
+  }
+  
+  if (!recognition.value) {
+    initSpeechRecognition()
+    // 等待初始化完成
+    await new Promise(resolve => setTimeout(resolve, 100))
+  }
+
+  if (isListening.value) {
+    console.log('停止录音')
+    recognition.value.stop()
+    isListening.value = false
+  } else {
+    console.log('开始录音')
+    try {
+      recognition.value.start()
+      isListening.value = true
+      ElMessage.info('开始语音识别，请说话')
+    } catch (error) {
+      console.error('启动语音识别失败:', error)
+      ElMessage.error('启动语音识别失败')
+      isListening.value = false
+    }
+  }
+}
+
+const getStatusType = (status) => {
+  switch (status) {
+    case 'PENDING': return 'warning'
+    case 'CONFIRMED': return 'success'
+    case 'REJECTED': return 'danger'
+    default: return 'info'
+  }
+}
+
+const getStatusText = (status) => {
+  switch (status) {
+    case 'PENDING': return '待处理'
+    case 'CONFIRMED': return '已确认'
+    case 'REJECTED': return '已拒绝'
+    default: return '未知'
+  }
+}
+
+onMounted(() => {
+  loadPurchaseHistory()
+  initSpeechRecognition()
+})
+</script>
+
+<style scoped>
+.purchase-container {
+  min-height: 100vh;
+  background: #f5f7fa;
+  padding: 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.header h2 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 32px;
+}
+
+.header p {
+  color: #666;
+  font-size: 16px;
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.quick-select {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.quick-select h3 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.item-card {
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 12px;
+}
+
+.item-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.item-icon {
+  margin-bottom: 15px;
+  color: #667eea;
+}
+
+.item-info h4 {
+  color: #333;
+  margin-bottom: 5px;
+  font-size: 16px;
+}
+
+.item-info .price {
+  margin: 5px 0 0;
+  color: #f56c6c;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.custom-input {
+  margin-bottom: 30px;
+}
+
+.input-with-voice {
+  position: relative;
+}
+
+.voice-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.voice-status {
+  font-size: 14px;
+  color: #666;
+}
+
+.custom-input {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  margin-bottom: 40px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.custom-input h3 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.input-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.history {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.history h3 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .purchase-container {
+    padding: 10px;
+  }
+  
+  .quick-select,
+  .custom-input,
+  .history {
+    padding: 20px;
+  }
+  
+  .header h2 {
+    font-size: 24px;
+  }
+  
+  .item-card {
+    margin-bottom: 15px;
+  }
+}
+</style>

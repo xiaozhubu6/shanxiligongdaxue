@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhuqilong.back.mapper.BillMapper">
+
+    <resultMap id="BaseResultMap" type="com.zhuqilong.back.entity.Bill">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="amount" property="amount" jdbcType="DECIMAL"/>
+        <result column="bill_type" property="billType" jdbcType="VARCHAR"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="elder_id" property="elderId" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.zhuqilong.back.entity.Bill" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO bill (amount, bill_type, created_at, description, elder_id)
+        VALUES (#{amount}, #{billType}, #{createdAt}, #{description}, #{elderId})
+    </insert>
+
+    <update id="updateById" parameterType="com.zhuqilong.back.entity.Bill">
+        UPDATE bill
+        SET amount = #{amount},
+            bill_type = #{billType},
+            created_at = #{createdAt},
+            description = #{description},
+            elder_id = #{elderId}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM bill WHERE id = #{id}
+    </delete>
+
+    <select id="selectById" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT id, amount, bill_type, created_at, description, elder_id
+        FROM bill
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT id, amount, bill_type, created_at, description, elder_id
+        FROM bill
+    </select>
+
+    <select id="selectByElderId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        SELECT id, amount, bill_type, created_at, description, elder_id
+        FROM bill
+        WHERE elder_id = #{elderId}
+    </select>
+
+</mapper>
